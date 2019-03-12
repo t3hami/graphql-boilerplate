@@ -1,59 +1,49 @@
 const uuidv4 = require('uuid/v4');
+const { TodoCollection } = require('../models/models');
 let todos = {
 
 };
 module.exports.resolvers = {
-    Query: {
-      hello: () => {
-        return 'Hello world! This graphql api end point is developed by Muhammad Tehami.';
-      },
-      todo: (parent, { id }) => {
-        return todos[id];
-      },
-      todos: async () => {
-        return Object.values(todos);
-      },
+  Query: {
+    hello: () => {
+      return 'Hello world! This graphql api end point is developed by Muhammad Tehami.';
     },
-    Todo: {
-      description: todo => {
-        return todo.description;
-      },
-      isDone: todo => {
-        return todo.isDone;
-      },
+    todo: async (parent, { id }) => await TodoCollection.findOne({ _id: id }).exec(),
+    todos: async () => await TodoCollection.find({}).exec()
+
+    // return Object.values(todos);
+  },
+  Todo: {
+    description: todo => {
+      return todo.description;
     },
-    Mutation: {
-      createTodo: async (parent, { description }, { me }) => {
-        const id = uuidv4();
-        const todo = {
-          id,
-          description,
-          isDone: false,
-        };
-  
-        todos[id] = todo;
-        return todo;
-      },
-      deleteTodo: (parent, { id }, { me }) => {
-        console.log(id);
-        console.log(todos[id]);
-        if (delete todos[id]) return true;
-        else return false;
-      },
-      editTodo: (parent, todo, { me }) => {
-        if (!todo['description'] && todo['isDone']) {
-          todos[todo['id']]['isDone'] = todo['isDone'];
-          return true;
-        }
-        else if (todo['description'] && !todo['isDone']) {
-          todos[todo['id']]['description'] = todo['description'];
-          return true;
-        }
-        else if (todo['description'] && todo['isDone']) {
-          todos[todo['id']] = todo;
-          return true;
-        }
-        return false;
-      },
+    isDone: todo => {
+      return todo.isDone;
     },
-  };
+  },
+  Mutation: {
+    createTodo: async (parent, { description }, { me }) => {
+      const id = uuidv4();
+      let todo = {
+        description,
+        isDone: false,
+      };
+
+      todo = await TodoCollection.create(todo);
+      return todo;
+    },
+    deleteTodo: async (parent, { id }, { me }) => {
+      let response = await TodoCollection.find({ _id: id }).remove().exec();
+      if (response.n == 1) return true;
+      return false;
+    },
+    editTodo: async (parent, todo, { me }) => {
+        var response;
+        await TodoCollection.findOneAndUpdate({_id: todo['id']}, {...todo}, { upsert: true }, function (err, doc) {
+          if (err) response = false;
+          else response = true;
+        });
+        return response
+    },
+  },
+};

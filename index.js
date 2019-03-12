@@ -2,7 +2,6 @@ const express = require('express');
 const { ApolloServer, gql } = require('apollo-server-express');
 const cors = require('cors');
 require('./db');
-// const { TodoCollection } = require('./models/models')
 const { resolvers } = require('./resolvers/resolvers')
 const { schema } = require('./models/schema')
 
@@ -10,9 +9,6 @@ const app = express();
 
 app.use(cors());
 
-let todos = {
-
-};
 
 const server = new ApolloServer({
   typeDefs: schema,

@@ -8,7 +8,7 @@ module.exports.schema = gql`
   }
 
   type Todo {
-    id: ID,
+    id: ID!,
     description: String,
     isDone: Boolean
   }
