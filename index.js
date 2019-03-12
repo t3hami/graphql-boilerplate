@@ -9,7 +9,6 @@ const app = express();
 
 app.use(cors());
 
-
 const server = new ApolloServer({
   typeDefs: schema,
   resolvers,
